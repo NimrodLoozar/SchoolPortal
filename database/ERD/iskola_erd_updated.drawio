@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<mxfile host="app.diagrams.net">
+  <diagram name="ERD" id="15bd126269">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="606e8eb42f" value="&lt;&lt;b&gt;&gt;users&lt;&lt;b&gt;&gt;
+id
+name
+email
+password
+role
+is_active
+created_at
+updated_at" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="200" height="145" as_="geometry"/>
+        </mxCell>
+        <mxCell id="03b07fd0b5" value="&lt;&lt;b&gt;&gt;students&lt;&lt;b&gt;&gt;
+id
+user_id
+student_number
+class
+birth_date" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="290" y="40" width="200" height="100" as_="geometry"/>
+        </mxCell>
+        <mxCell id="2aec9527c1" value="&lt;&lt;b&gt;&gt;teachers&lt;&lt;b&gt;&gt;
+id
+user_id
+subject_specialty" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="540" y="40" width="200" height="70" as_="geometry"/>
+        </mxCell>
+        <mxCell id="4fea3736f7" value="&lt;&lt;b&gt;&gt;contacts&lt;&lt;b&gt;&gt;
+id
+user_id
+phone
+email
+zip_code
+city
+street
+house_number" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="790" y="40" width="200" height="145" as_="geometry"/>
+        </mxCell>
+        <mxCell id="f85864e218" value="&lt;&lt;b&gt;&gt;subjects&lt;&lt;b&gt;&gt;
+id
+name
+code
+description" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="200" height="85" as_="geometry"/>
+        </mxCell>
+        <mxCell id="b9eee14814" value="&lt;&lt;b&gt;&gt;rooms&lt;&lt;b&gt;&gt;
+id
+name
+location
+capacity" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="290" y="340" width="200" height="85" as_="geometry"/>
+        </mxCell>
+        <mxCell id="5a98b360ea" value="&lt;&lt;b&gt;&gt;schedules&lt;&lt;b&gt;&gt;
+id
+subject_id
+teacher_id
+room_id
+weekday
+start_time
+end_time
+group" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="540" y="340" width="200" height="145" as_="geometry"/>
+        </mxCell>
+        <mxCell id="049735a9ea" value="&lt;&lt;b&gt;&gt;enrollments&lt;&lt;b&gt;&gt;
+id
+student_id
+schedule_id" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="790" y="340" width="200" height="70" as_="geometry"/>
+        </mxCell>
+        <mxCell id="1250ef5f99" value="&lt;&lt;b&gt;&gt;grades&lt;&lt;b&gt;&gt;
+id
+student_id
+subject_id
+teacher_id
+grade
+description
+graded_at" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="200" height="130" as_="geometry"/>
+        </mxCell>
+        <mxCell id="0f9c84ccfa" value="&lt;&lt;b&gt;&gt;notes&lt;&lt;b&gt;&gt;
+id
+teacher_id
+subject_id
+schedule_id
+note_text
+attachment_path" style="shape=swimlane;startSize=20;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="290" y="640" width="200" height="115" as_="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
