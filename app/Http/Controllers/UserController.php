@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,12 +75,14 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'role' => 'required|in:Student,Teacher,Schedule_admin,Owner',
+            'email' => 'required_unless:role,Student|email|unique:contacts,email',
             'password' => 'required|string|min:8|confirmed',
             'is_active' => 'boolean',
             'comment' => 'nullable|string|max:1000'
         ]);
 
-        User::create([
+        // Create the user
+        $user = User::create([
             'name' => $request->name,
             'role' => $request->role,
             'password' => bcrypt($request->password),
@@ -86,8 +90,52 @@ class UserController extends Controller
             'comment' => $request->comment,
         ]);
 
+        // If the user is a student, create student record and contact with school email
+        if ($request->role === 'Student') {
+            $this->createStudentRecords($user);
+        } else {
+            // For non-student users, create contact record with provided email
+            $user->contact()->create([
+                'email' => $request->email,
+                'is_active' => $user->is_active,
+            ]);
+        }
+
         return redirect()->route('users.index')
-            ->with('success', 'User created successfully.');
+            ->with('success', 'User created successfully.' .
+                ($request->role === 'Student' ? ' Student number and school email generated automatically.' : ''));
+    }
+
+    /**
+     * Create student records with auto-generated student number and school email.
+     */
+    private function createStudentRecords(User $user)
+    {
+        // Generate unique student number
+        $studentNumber = $this->generateUniqueStudentNumber();
+
+        // Create student record with default values
+        $student = $user->student()->create([
+            'student_number' => $studentNumber,
+            'class' => 'Unassigned', // Default class value
+            'birth_date' => '2000-01-01', // Default birth date - can be updated later
+            'is_active' => $user->is_active,
+        ]);
+
+        // Create contact record with school email
+        $schoolEmail = $studentNumber . '@school.com';
+        $user->contact()->create([
+            'email' => $schoolEmail,
+            'is_active' => $user->is_active,
+        ]);
+    }
+
+    /**
+     * Generate a unique student number.
+     */
+    private function generateUniqueStudentNumber()
+    {
+        return Student::generateUniqueStudentNumber();
     }
 
     /**
@@ -133,6 +181,8 @@ class UserController extends Controller
             'comment' => 'nullable|string|max:1000'
         ]);
 
+        $oldRole = $user->role;
+
         $updateData = [
             'name' => $request->name,
             'role' => $request->role,
@@ -147,8 +197,23 @@ class UserController extends Controller
 
         $user->update($updateData);
 
+        // Handle role changes for students
+        if ($oldRole !== $request->role) {
+            // If changing TO student role and no student record exists
+            if ($request->role === 'Student' && !$user->student) {
+                $this->createStudentRecords($user);
+            }
+
+            // If changing FROM student role, you might want to deactivate student record
+            // but keep it for historical purposes (optional)
+            if ($oldRole === 'Student' && $request->role !== 'Student' && $user->student) {
+                $user->student->update(['is_active' => false]);
+            }
+        }
+
         return redirect()->route('users.index')
-            ->with('success', 'User updated successfully.');
+            ->with('success', 'User updated successfully.' .
+                ($oldRole !== $request->role && $request->role === 'Student' ? ' Student number and school email generated automatically.' : ''));
     }
 
     /**

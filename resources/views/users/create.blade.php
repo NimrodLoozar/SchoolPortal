@@ -38,7 +38,7 @@
                             </label>
                             <select id="role" name="role"
                                 class="block mt-1 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm @error('role') border-red-500 @enderror"
-                                required>
+                                required onchange="toggleRoleSpecificFields()">>
                                 <option value="">{{ __('Select a role') }}</option>
                                 <option value="Student" {{ old('role') === 'Student' ? 'selected' : '' }}>Student
                                 </option>
@@ -51,6 +51,52 @@
                             @error('role')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
+
+                            <!-- Student Info Notice -->
+                            <div id="student-info"
+                                class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"
+                                style="display: none;">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                            {{ __('Student Account Information') }}
+                                        </h3>
+                                        <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li>{{ __('A unique student number will be automatically generated') }}
+                                                </li>
+                                                <li>{{ __('School email will be created as: [student_number]@school.com') }}
+                                                </li>
+                                                <li>{{ __('Student record will be linked to this user account') }}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-4" id="email-field">
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('Email Address') }}
+                            </label>
+                            <input id="email"
+                                class="block mt-1 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm @error('email') border-red-500 @enderror"
+                                type="email" name="email" value="{{ old('email') }}"
+                                placeholder="{{ __('Enter email address...') }}" />
+                            @error('email')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {{ __('Required for all roles except Student (students get auto-generated school emails).') }}
+                            </p>
                         </div>
 
                         <!-- Password -->
@@ -135,8 +181,49 @@
                         <div><strong>Teacher:</strong> Can view schedules and manage their classes</div>
                         <div><strong>Student:</strong> Can view their own schedule and grades</div>
                     </div>
+
+                    <div class="mt-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <h4 class="font-medium text-green-900 dark:text-green-100 mb-2">
+                            {{ __('Automatic Student Setup') }}
+                        </h4>
+                        <div class="text-sm text-green-800 dark:text-green-200">
+                            <div>• Student number will be auto-generated (format: YYYY####)</div>
+                            <div>• School email will be created: [student_number]@school.com</div>
+                            <div>• Default class will be set to "Unassigned" (can be updated later)</div>
+                            <div>• Default birth date will be set to 2000-01-01 (can be updated later)</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    function toggleRoleSpecificFields() {
+        const roleSelect = document.getElementById('role');
+        const studentInfo = document.getElementById('student-info');
+        const emailField = document.getElementById('email-field');
+        const emailInput = document.getElementById('email');
+
+        if (roleSelect.value === 'Student') {
+            // Show student info, hide email field for students
+            studentInfo.style.display = 'block';
+            emailField.style.display = 'none';
+            emailInput.required = false;
+        } else {
+            // Hide student info, show email field for other roles
+            studentInfo.style.display = 'none';
+            emailField.style.display = 'block';
+            emailInput.required = true;
+        }
+    }
+
+    // Show appropriate fields on page load if role is already selected
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleRoleSpecificFields();
+
+        // Add event listener to role select
+        document.getElementById('role').addEventListener('change', toggleRoleSpecificFields);
+    });
+</script>

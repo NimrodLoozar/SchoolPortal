@@ -70,4 +70,19 @@ class Student extends Model
     {
         return $this->hasManyThrough(Schedule::class, Enrollment::class, 'student_id', 'id', 'id', 'schedule_id');
     }
+
+    /**
+     * Generate a unique student number.
+     */
+    public static function generateUniqueStudentNumber()
+    {
+        do {
+            // Generate student number format: current year + 4 digit random number
+            $year = date('Y');
+            $randomNumber = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            $studentNumber = $year . $randomNumber;
+        } while (self::where('student_number', $studentNumber)->exists());
+
+        return $studentNumber;
+    }
 }

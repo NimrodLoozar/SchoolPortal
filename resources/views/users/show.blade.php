@@ -142,26 +142,40 @@
                             </h4>
                             <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Student Number</dt>
+                                    <dd class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                        {{ $user->student->student_number }}</dd>
+                                </div>
+                                <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Student ID</dt>
                                     <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $user->student->id }}</dd>
                                 </div>
-                                @if ($user->student->date_of_birth)
+                                @if ($user->student->class)
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Class</dt>
+                                        <dd class="text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $user->student->class }}</dd>
+                                    </div>
+                                @endif
+                                @if ($user->student->birth_date)
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Date of Birth
                                         </dt>
                                         <dd class="text-sm text-gray-900 dark:text-gray-100">
-                                            {{ \Carbon\Carbon::parse($user->student->date_of_birth)->format('F d, Y') }}
+                                            {{ \Carbon\Carbon::parse($user->student->birth_date)->format('F d, Y') }}
                                         </dd>
                                     </div>
                                 @endif
-                                @if ($user->student->grade_level)
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Grade Level
-                                        </dt>
-                                        <dd class="text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $user->student->grade_level }}</dd>
-                                    </div>
-                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Student Status</dt>
+                                    <dd class="text-sm">
+                                        <span
+                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                            {{ $user->student->is_active ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }}">
+                                            {{ $user->student->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </dd>
+                                </div>
                             </dl>
                         </div>
                     @endif

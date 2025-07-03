@@ -119,7 +119,11 @@
                                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                         {{ $user->name }}
                                                     </div>
-                                                    @if ($user->comment)
+                                                    @if ($user->role === 'Student' && $user->student)
+                                                        <div class="text-sm text-blue-600 dark:text-blue-400">
+                                                            Student #: {{ $user->student->student_number }}
+                                                        </div>
+                                                    @elseif($user->comment)
                                                         <div class="text-sm text-gray-500 dark:text-gray-400">
                                                             {{ Str::limit($user->comment, 50) }}
                                                         </div>
