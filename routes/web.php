@@ -6,10 +6,6 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ThemeLogController;
 
-Route::get('/', function () {
-    $isMaintenanceMode = DB::table('settings')->where('key', 'maintenance_mode')->value('value') ?? false;
-    return view('welcome', compact('isMaintenanceMode'));
-})->name('/');
 
 Route::get('/dashboard', function () {
     $isMaintenanceMode = DB::table('settings')->where('key', 'maintenance_mode')->value('value') ?? false;
@@ -17,6 +13,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/', function () {
+        $isMaintenanceMode = DB::table('settings')->where('key', 'maintenance_mode')->value('value') ?? false;
+        return view('dashboard', compact('isMaintenanceMode'));
+    })->name('/');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
