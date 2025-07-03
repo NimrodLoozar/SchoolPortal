@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\MaintenanceController;
-use App\Http\Controllers\ThemeLogController;
+// use App\Http\Controllers\ThemeLogController;
 
 
 Route::get('/dashboard', function () {
@@ -20,10 +21,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/log-theme-switch', [ThemeLogController::class, 'logSwitch']);
+    // Route::post('/log-theme-switch', [ThemeLogController::class, 'logSwitch']);
+
+    // User Management Routes (Owner only)
+    Route::resource('users', UserController::class);
+    Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
 });
 
 Route::post('/toggle-maintenance', [MaintenanceController::class, 'toggle'])->name('toggle.maintenance');
-Route::post('/log-theme-event', [ThemeLogController::class, 'logEvent']);
+// Route::post('/log-theme-event', [ThemeLogController::class, 'logEvent']);
 
 require __DIR__ . '/auth.php';
