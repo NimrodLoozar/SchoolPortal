@@ -20,7 +20,6 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
         'password',
         'role',
         'is_active',
@@ -45,7 +44,6 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
@@ -105,5 +103,30 @@ class User extends Authenticatable
     public function isOwner(): bool
     {
         return $this->role === 'Owner';
+    }
+
+    /**
+     * Get the user's email from contact.
+     */
+    public function getEmailAttribute(): ?string
+    {
+        return $this->contact?->email;
+    }
+
+    /**
+     * Find a user by email from contact table.
+     */
+    public static function findByEmail(string $email): ?User
+    {
+        $contact = Contact::where('email', $email)->first();
+        return $contact ? $contact->user : null;
+    }
+
+    /**
+     * Find a user by email for authentication.
+     */
+    public function findForPassport($username)
+    {
+        return self::findByEmail($username);
     }
 }

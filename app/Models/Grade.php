@@ -70,7 +70,7 @@ class Grade extends Model
      */
     public function getPerformanceLevelAttribute(): string
     {
-        return match($this->grade) {
+        return match ($this->grade) {
             5 => 'Excellent',
             4 => 'Good',
             3 => 'Satisfactory',

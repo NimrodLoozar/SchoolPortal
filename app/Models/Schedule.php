@@ -120,7 +120,7 @@ class Schedule extends Model
     {
         $start = \Carbon\Carbon::parse($this->start_time);
         $end = \Carbon\Carbon::parse($this->end_time);
-        
+
         return $end->diffInMinutes($start);
     }
 }

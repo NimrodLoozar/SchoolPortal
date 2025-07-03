@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Contact;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,14 +32,23 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:contacts,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:Student,Teacher,Schedule_admin,Owner'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'is_active' => true,
+        ]);
+
+        // Create the contact record with email
+        Contact::create([
+            'user_id' => $user->id,
+            'email' => $request->email,
+            'is_active' => true,
         ]);
 
         event(new Registered($user));

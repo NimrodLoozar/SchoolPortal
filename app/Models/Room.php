@@ -51,11 +51,11 @@ class Room extends Model
     public function getFullDescriptionAttribute(): string
     {
         $description = $this->name;
-        
+
         if ($this->location) {
             $description .= ' (' . $this->location . ')';
         }
-        
+
         return $description;
     }
 }
