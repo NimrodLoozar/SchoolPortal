@@ -19,6 +19,12 @@
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('User Management') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('grades.average')" :active="request()->routeIs('grades.*')">
+                            {{ __('Average Grades') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('classes.index')" :active="request()->routeIs('classes.*')">
+                            {{ __('Class Analytics') }}
+                        </x-nav-link>
                     @endif
                     <div class="flex items-center">
                         <x-theme-toggle />
@@ -89,6 +95,12 @@
             @if (auth()->user() && auth()->user()->role === 'Owner')
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                     {{ __('User Management') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('grades.average')" :active="request()->routeIs('grades.*')">
+                    {{ __('Average Grades') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('classes.index')" :active="request()->routeIs('classes.*')">
+                    {{ __('Class Analytics') }}
                 </x-responsive-nav-link>
             @endif
         </div>
