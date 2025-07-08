@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\ClassOverviewDTO;
+use App\DTOs\ClassOverviewCollectionDTO;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Grade;
@@ -22,46 +24,63 @@ class ClassController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Get all classes with statistics
+        // Get all unique class names
         $classNames = Student::select('class')
             ->where('is_active', true)
             ->whereNotNull('class')
             ->groupBy('class')
             ->pluck('class');
 
-        $classes = $classNames->map(function ($className) {
-            $classData = new \stdClass();
-            $classData->class = $className;
-
-            // Get students count
-            $classData->students_count = Student::where('class', $className)
-                ->where('is_active', true)
-                ->count();
-
-            // Get subjects for this class
-            $classData->subjects = Subject::select('subjects.*')
-                ->join('grades', 'subjects.id', '=', 'grades.subject_id')
-                ->join('students', 'grades.student_id', '=', 'students.id')
-                ->where('students.class', $className)
-                ->where('students.is_active', true)
-                ->where('grades.is_active', true)
-                ->where('subjects.is_active', true)
-                ->distinct()
-                ->get();
-
-            $classData->subjects_count = $classData->subjects->count();
-
-            // Calculate average grade for this class
-            $classData->average_grade = Grade::join('students', 'grades.student_id', '=', 'students.id')
-                ->where('students.class', $className)
-                ->where('students.is_active', true)
-                ->where('grades.is_active', true)
-                ->avg('grades.grade') ?? 0;
-
-            return $classData;
+        // Build class data collection using DTOs
+        $classesData = $classNames->map(function ($className) {
+            return $this->buildClassData($className);
         });
 
-        return view('classes.index', compact('classes'));
+        // Create DTO collection
+        $classOverviewCollection = new ClassOverviewCollectionDTO($classesData);
+
+        return view('classes.index', [
+            'classes' => $classOverviewCollection->classes,
+            'overviewData' => $classOverviewCollection
+        ]);
+    }
+
+    /**
+     * Build class data for a specific class
+     */
+    private function buildClassData(string $className): ClassOverviewDTO
+    {
+        // Get students count
+        $studentsCount = Student::where('class', $className)
+            ->where('is_active', true)
+            ->count();
+
+        // Get subjects for this class (using more efficient query)
+        $subjectIds = Grade::join('students', 'grades.student_id', '=', 'students.id')
+            ->where('students.class', $className)
+            ->where('students.is_active', true)
+            ->where('grades.is_active', true)
+            ->pluck('grades.subject_id')
+            ->unique();
+
+        $subjectsCount = $subjectIds->count();
+
+        // Calculate average grade for this class
+        $averageGrade = Grade::join('students', 'grades.student_id', '=', 'students.id')
+            ->where('students.class', $className)
+            ->where('students.is_active', true)
+            ->where('grades.is_active', true)
+            ->avg('grades.grade') ?? 0;
+
+        // Create class data object
+        $classData = (object) [
+            'class' => $className,
+            'students_count' => $studentsCount,
+            'subjects_count' => $subjectsCount,
+            'average_grade' => $averageGrade
+        ];
+
+        return ClassOverviewDTO::fromClassData($classData);
     }
 
     /**

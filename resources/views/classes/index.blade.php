@@ -18,7 +18,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-center">
                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {{ $classes->count() }}
+                            {{ $overviewData->getTotalClasses() }}
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Total Classes</div>
                     </div>
@@ -26,7 +26,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-center">
                         <div class="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {{ $classes->sum('students_count') }}
+                            {{ $overviewData->getTotalStudents() }}
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Total Students</div>
                     </div>
@@ -34,7 +34,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-center">
                         <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                            {{ number_format($classes->avg('average_grade'), 2) }}
+                            {{ $overviewData->getFormattedOverallAverageGrade() }}
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Overall Average</div>
                     </div>
@@ -113,7 +113,7 @@
                                                         class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
                                                         <span
                                                             class="text-sm font-medium text-blue-800 dark:text-blue-100">
-                                                            {{ strtoupper(substr($class->class, 0, 2)) }}
+                                                            {{ $class->getClassInitials() }}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -136,28 +136,13 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-bold text-gray-900 dark:text-gray-100">
-                                                {{ number_format($class->average_grade, 2) }}
+                                                {{ $class->getFormattedAverageGrade() }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                @if ($class->average_grade >= 4.5) bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
-                                                @elseif($class->average_grade >= 3.5) bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
-                                                @elseif($class->average_grade >= 2.5) bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
-                                                @elseif($class->average_grade >= 1.5) bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100
-                                                @else bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 @endif">
-                                                @if ($class->average_grade >= 4.5)
-                                                    Excellent
-                                                @elseif($class->average_grade >= 3.5)
-                                                    Good
-                                                @elseif($class->average_grade >= 2.5)
-                                                    Satisfactory
-                                                @elseif($class->average_grade >= 1.5)
-                                                    Needs Improvement
-                                                @else
-                                                    Unsatisfactory
-                                                @endif
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $class->performance_color_class }}">
+                                                {{ $class->performance_level }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -187,8 +172,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Data for charts
-        const classData = @json($classes);
+        // Data for charts from DTO
+        const chartData = @json($overviewData->getChartData());
 
         // Create charts when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -200,8 +185,8 @@
         function createStudentsPerClassChart() {
             const ctx = document.getElementById('studentsPerClassChart').getContext('2d');
 
-            const labels = classData.map(cls => cls.class);
-            const data = classData.map(cls => cls.students_count);
+            const labels = chartData.map(cls => cls.class);
+            const data = chartData.map(cls => cls.students_count);
 
             new Chart(ctx, {
                 type: 'bar',
@@ -239,8 +224,8 @@
         function createAverageGradesPerClassChart() {
             const ctx = document.getElementById('averageGradesPerClassChart').getContext('2d');
 
-            const labels = classData.map(cls => cls.class);
-            const averages = classData.map(cls => parseFloat(cls.average_grade));
+            const labels = chartData.map(cls => cls.class);
+            const averages = chartData.map(cls => parseFloat(cls.average_grade));
 
             // Create background colors based on performance
             const backgroundColors = averages.map(avg => {
@@ -291,13 +276,8 @@
                             callbacks: {
                                 afterLabel: function(context) {
                                     const value = context.parsed.y;
-                                    let performance = '';
-                                    if (value >= 4.5) performance = 'Excellent';
-                                    else if (value >= 3.5) performance = 'Good';
-                                    else if (value >= 2.5) performance = 'Satisfactory';
-                                    else if (value >= 1.5) performance = 'Needs Improvement';
-                                    else performance = 'Unsatisfactory';
-                                    return 'Performance: ' + performance;
+                                    const performanceLevel = chartData[context.dataIndex].performance_level;
+                                    return 'Performance: ' + performanceLevel;
                                 }
                             }
                         }
