@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\DTOs\ClassOverviewDTO;
 use App\DTOs\ClassOverviewCollectionDTO;
+use App\Http\Requests\ClassIndexRequest;
+use App\Http\Requests\ClassShowRequest;
+use App\Http\Requests\ClassStudentRequest;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Grade;
@@ -17,13 +20,8 @@ class ClassController extends Controller
     /**
      * Display a listing of all classes
      */
-    public function index()
+    public function index(ClassIndexRequest $request)
     {
-        // Only owners can access this page
-        if (Auth::user()->role !== 'Owner') {
-            abort(403, 'Unauthorized action.');
-        }
-
         // Get all unique class names
         $classNames = Student::select('class')
             ->where('is_active', true)
@@ -35,6 +33,35 @@ class ClassController extends Controller
         $classesData = $classNames->map(function ($className) {
             return $this->buildClassData($className);
         });
+
+        // Apply sorting if requested
+        if ($request->has('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDirection = $request->input('sort_direction', 'asc');
+
+            $classesData = $classesData->sortBy(function ($class) use ($sortBy) {
+                switch ($sortBy) {
+                    case 'name':
+                        return $class->className;
+                    case 'students_count':
+                        return $class->studentsCount;
+                    case 'subjects_count':
+                        return $class->subjectsCount;
+                    case 'average_grade':
+                        return $class->averageGrade;
+                    default:
+                        return $class->className;
+                }
+            }, SORT_REGULAR, $sortDirection === 'desc');
+        }
+
+        // Apply performance filter if requested
+        if ($request->has('filter_performance')) {
+            $performanceFilter = $request->input('filter_performance');
+            $classesData = $classesData->filter(function ($class) use ($performanceFilter) {
+                return $class->getPerformanceLevel() === $performanceFilter;
+            });
+        }
 
         // Create DTO collection
         $classOverviewCollection = new ClassOverviewCollectionDTO($classesData);
@@ -86,12 +113,9 @@ class ClassController extends Controller
     /**
      * Display the specified class with detailed analytics
      */
-    public function show($class)
+    public function show(ClassShowRequest $request)
     {
-        // Only owners can access this page
-        if (Auth::user()->role !== 'Owner') {
-            abort(403, 'Unauthorized action.');
-        }
+        $class = $request->getClassName();
 
         // Get class statistics
         $classStats = [
@@ -161,12 +185,10 @@ class ClassController extends Controller
     /**
      * Display detailed information for a specific student
      */
-    public function showStudent($class, $studentId)
+    public function showStudent(ClassStudentRequest $request)
     {
-        // Only owners can access this page
-        if (Auth::user()->role !== 'Owner') {
-            abort(403, 'Unauthorized action.');
-        }
+        $class = $request->getClassName();
+        $studentId = $request->getStudentId();
 
         // Get student with all related data
         $student = Student::with(['user.contact', 'grades.subject', 'grades.teacher.user'])
